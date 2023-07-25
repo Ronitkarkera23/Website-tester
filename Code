@@ -1,0 +1,46 @@
+import requests
+
+
+def scan_url(url):
+    try:
+        # Perform a HEAD request to retrieve only the headers without downloading the entire content
+        response = requests.head(url, timeout=10)
+
+        if response.status_code == 200:
+            print(f"URL: {url} - Status: OK")
+
+            # Check for SSL certificate validity
+            if response.url.startswith("https"):
+                if response.is_redirect:
+                    print(f"  WARNING: Redirected to {response.url}")
+
+                if "strict-transport-security" not in response.headers:
+                    print("  WARNING: No Strict-Transport-Security header")
+
+                if "x-content-type-options" not in response.headers:
+                    print("  WARNING: No X-Content-Type-Options header")
+
+                if "x-frame-options" not in response.headers:
+                    print("  WARNING: No X-Frame-Options header")
+
+                if "content-security-policy" not in response.headers:
+                    print("  WARNING: No Content-Security-Policy header")
+            else:
+                print("  WARNING: Non-HTTPS URL")
+
+        else:
+            print(f"URL: {url} - Status: {response.status_code}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"URL: {url} - Error: {e}")
+
+
+if __name__ == "__main__":
+    urls_to_scan = [
+        "https://www.example.com",
+        "https://www.google.com",
+        "http://malware.wicar.org/data/ms14_064_ole_xp.html"
+    ]
+
+    for url in urls_to_scan:
+        scan_url(url)
